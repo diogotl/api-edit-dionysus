@@ -18,6 +18,7 @@ model Event {
     title         String
     details       String?
     slug          String          @unique
+    date          DateTime?
     maxAttendees  Int?            @map("max_attendees")
     // Attendee      Attendee[]
     // CheckIn       CheckIn[]

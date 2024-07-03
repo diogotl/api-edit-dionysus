@@ -11,7 +11,7 @@ export async function getEvent(request: FastifyRequest, reply: FastifyReply) {
         include: {
             _count: {
                 select: {
-                    Attendee: true,
+                    AttendeeEvent: true,
                 },
             },
         },
@@ -29,7 +29,7 @@ export async function getEvent(request: FastifyRequest, reply: FastifyReply) {
         details: event.details,
         slug: event.slug,
         maxAttendees: event.maxAttendees,
-        attendeesCount: event._count.Attendee,
+        attendeesCount: event._count.AttendeeEvent,
     };
 
     return reply.status(200).send({

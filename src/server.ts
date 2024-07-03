@@ -2,17 +2,23 @@ import fastify from "fastify";
 import { createEvent } from "./http/create-event";
 import { registerForEvent } from "./http/register-for-event";
 import { getEvent } from "./http/get-event";
+import { getEventAttendees } from "./http/get-event-attendees";
+import cors from "@fastify/cors";
+import { getEvents } from "./http/get-events";
 
 const app = fastify();
 
-// app.get("/", async (request, reply) => {
-//   return { hello: "world" };
-// });
+app.register(cors, {
+    origin: true,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+});
 
+app.get("/events", getEvents);
 app.post("/events", createEvent);
 app.post("/events/:eventId/attendees", registerForEvent);
 app.get("/events/:eventId", getEvent);
-// app.p
+app.get("/events/:slug/attendees", getEventAttendees);
 
 app.listen({
     port: 3333,
