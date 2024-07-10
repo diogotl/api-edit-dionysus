@@ -9,7 +9,7 @@ export async function registerForEvent(
     reply: FastifyReply,
 ) {
     const registerForEvent = z.object({
-        name: z.string().min(5),
+        name: z.string().min(3),
         email: z.string().email(),
     });
 
@@ -33,7 +33,7 @@ export async function registerForEvent(
         });
     }
 
-    const amountOfEventAttenddees = await prisma.attendee.count({
+    const amountOfEventAttenddees = await prisma.attendeeEvent.count({
         where: {
             eventId,
         },
@@ -45,11 +45,17 @@ export async function registerForEvent(
         });
     }
 
-    const isUserAlreadyRegistered = await prisma.attendee.findUnique({
+    const isUserAlreadyRegistered = await prisma.attendeeEvent.findFirst({
+        include: {
+            attendee: true,
+            event: true,
+        },
         where: {
-            eventId_email: {
+            attendee: {
                 email,
-                eventId,
+            },
+            event: {
+                id: eventId,
             },
         },
     });
@@ -64,7 +70,13 @@ export async function registerForEvent(
         data: {
             name: name,
             email: email,
-            eventId,
+        },
+    });
+
+    await prisma.attendeeEvent.create({
+        data: {
+            attendeeId: attendee.id,
+            eventId: event.id,
         },
     });
 

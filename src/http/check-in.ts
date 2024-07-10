@@ -4,11 +4,13 @@ import { prisma } from "../libs/prisma";
 
 export async function checkIn(request: FastifyRequest, reply: FastifyReply) {
     const checkInSchema = z.object({
-        attendeeId: z.string(),
         eventId: z.string(),
+        attendeeId: z.string(),
     });
 
     const { attendeeId, eventId } = checkInSchema.parse(request.body);
+
+    console.log(attendeeId, eventId);
 
     const attendee = await prisma.attendeeEvent.findFirst({
         where: {
@@ -23,16 +25,20 @@ export async function checkIn(request: FastifyRequest, reply: FastifyReply) {
         });
     }
 
+    if (attendee.hasAttended != null) {
+        return reply.code(400).send({
+            error: "Attendee has already checked in",
+        });
+    }
+
     const updatedAttendee = await prisma.attendeeEvent.update({
         where: {
-            id: attendeeId,
+            id: attendee.id,
         },
         data: {
-            hasAttended: true,
+            hasAttended: new Date(),
         },
     });
 
-    return reply.code(200).send({
-        updatedAttendee,
-    });
+    return reply.code(200).send(updatedAttendee);
 }

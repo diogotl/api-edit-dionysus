@@ -14,16 +14,18 @@ export async function createEvent(
         title: z.string().min(5),
         details: z.string().nullable(),
         maxAttendees: z.number().int().positive().nullable(),
-        slug: z.string().min(5),
+        date: z.string(),
     });
 
     const data = createEventSchema.parse(request.body);
 
-    const existingEvent = await prisma.event.findUnique({
+    const existingEvent = await prisma.event.findFirst({
         where: {
-            slug: data.slug,
+            title: data.title,
         },
     });
+
+    const parsedDate = new Date(data.date).toISOString();
 
     if (existingEvent) {
         return reply.code(400).send({
@@ -31,15 +33,14 @@ export async function createEvent(
         });
     }
 
-    const newEvent = {
-        title: data.title,
-        details: data.details,
-        maxAttendees: data.maxAttendees,
-        slug: generateSlug(data.title),
-    };
-
     const event = await prisma.event.create({
-        data: newEvent,
+        data: {
+            title: data.title,
+            details: data.details,
+            maxAttendees: data.maxAttendees,
+            slug: generateSlug(data.title),
+            date: parsedDate,
+        },
     });
 
     reply.code(201).send(event);

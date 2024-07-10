@@ -28,11 +28,11 @@ model Event {
 }
 
 model Attendee {
-    id            String   @id @default(uuid())
-    name          String
-    email         String
-    password_hash String
-    createdAt     DateTime @default(now()) @map("created_at")
+    id        String   @id @default(uuid())
+    name      String
+    email     String
+    // password_hash String
+    createdAt DateTime @default(now()) @map("created_at")
 
     // eventId       String          @map("event_id")
     // event         Event           @relation(fields: [eventId], references: [id])
@@ -41,7 +41,7 @@ model Attendee {
     // Event         Event?          @relation(fields: [eventId], references: [id])
     // eventId       String?
 
-    @@unique([email])
+    // @@unique([email])
     @@map("attendees")
 }
 
@@ -55,8 +55,8 @@ model AttendeeEvent {
     eventId String @map("event_id")
     event   Event  @relation(fields: [eventId], references: [id])
 
-    hasAttended DateTime @map("has_attended")
-    isOrganizer Boolean  @default(false) @map("is_organizer")
+    hasAttended DateTime? @map("has_attended")
+    // isOrganizer Boolean   @default(false) @map("is_organizer")
 
     @@map("attendee_events")
 }

@@ -19,6 +19,12 @@ export async function getEventAttendees(
 
     const { pageIndex, query } = getEventAttendeesQuery.parse(request.query);
 
+    const event = await prisma.event.findFirst({
+        where: {
+            slug,
+        },
+    });
+
     const attendees = await prisma.attendeeEvent.findMany({
         where: query
             ? {
@@ -28,6 +34,7 @@ export async function getEventAttendees(
                   attendee: {
                       name: {
                           contains: query,
+                          mode: "insensitive",
                       },
                   },
               }
@@ -67,8 +74,8 @@ export async function getEventAttendees(
     });
 
     return reply.code(200).send({
-        event: attendees[0]?.event,
-        attendees,
+        event: event,
+        attendees: attendees,
         total,
     });
 }
