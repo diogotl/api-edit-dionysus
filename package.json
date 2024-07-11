@@ -1,25 +1,27 @@
 {
-  "name": "edit-api-dionysos",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "start:dev": "tsx watch src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "@types/node": "^20.14.9",
-    "prisma": "^5.16.1",
-    "tsx": "^4.16.0",
-    "typescript": "^5.5.2"
-  },
-  "dependencies": {
-    "@fastify/cors": "^9.0.1",
-    "@prisma/client": "^5.16.1",
-    "fastify": "^4.28.1",
-    "zod": "^3.23.8"
-  }
+    "name": "edit-api-dionysos",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "start:dev": "tsx watch src/server.ts",
+        "start": "node dist/server.js",
+        "migrate": "npx prisma migrate deploy",
+        "build": "tsup src"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "@types/node": "^20.14.9",
+        "prisma": "^5.16.1",
+        "tsx": "^4.16.0",
+        "typescript": "^5.5.2"
+    },
+    "dependencies": {
+        "@fastify/cors": "^9.0.1",
+        "@prisma/client": "^5.16.1",
+        "fastify": "^4.28.1",
+        "zod": "^3.23.8"
+    }
 }
