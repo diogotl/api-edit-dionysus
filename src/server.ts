@@ -1,13 +1,14 @@
+import cors from "@fastify/cors";
 import fastify from "fastify";
+import { checkIn } from "./http/check-in";
 import { createEvent } from "./http/create-event";
-import { registerForEvent } from "./http/register-for-event";
 import { getEvent } from "./http/get-event";
 import { getEventAttendees } from "./http/get-event-attendees";
-import cors from "@fastify/cors";
 import { getEvents } from "./http/get-events";
-import { checkIn } from "./http/check-in";
+import { registerForEvent } from "./http/register-for-event";
+import { env } from "node:process";
 
-const app = fastify();
+export const app = fastify();
 
 app.register(cors, {
     origin: "*",
@@ -23,7 +24,8 @@ app.get("/events/:slug/attendees", getEventAttendees);
 app.patch("/events/check-in", checkIn);
 
 app.listen({
-    port: 3333,
+    host: "0.0.0.0",
+    port: Number(env.PORT),
 }).then(() => {
-    console.log("Server is running on http://localhost:3333");
+    console.log(`HTTP Server Running! 🚀 ${env.PORT}`);
 });
