@@ -36,6 +36,7 @@ export async function authenticate(
 
   const token = await reply.jwtSign({
     sub: user.id,
+    name: user.name,
   });
 
   return reply.status(201).send({
