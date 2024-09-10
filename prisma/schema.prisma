@@ -5,60 +5,64 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Event {
-    id            String          @id @default(uuid())
-    title         String
-    details       String?
-    slug          String          @unique
-    date          DateTime?
-    maxAttendees  Int?            @map("max_attendees")
-    // Attendee      Attendee[]
-    // CheckIn       CheckIn[]
-    AttendeeEvent AttendeeEvent[]
+  id            String          @id @default(uuid())
+  title         String
+  details       String?
+  slug          String          @unique
+  date          DateTime?
+  maxAttendees  Int?            @map("max_attendees")
+  // Attendee      Attendee[]
+  // CheckIn       CheckIn[]
+  AttendeeEvent AttendeeEvent[]
 
-    @@map("events")
+  organizerId String?   @map("organizer_id")
+  organizer   Attendee? @relation(fields: [organizerId], references: [id])
+
+  @@map("events")
 }
 
 model Attendee {
-    id        String   @id @default(uuid())
-    name      String
-    email     String
-    // password_hash String
-    createdAt DateTime @default(now()) @map("created_at")
+  id            String   @id @default(uuid())
+  name          String
+  email         String
+  password_hash String?
+  createdAt     DateTime @default(now()) @map("created_at")
 
-    // eventId       String          @map("event_id")
-    // event         Event           @relation(fields: [eventId], references: [id])
-    // CheckIn       CheckIn[]
-    AttendeeEvent AttendeeEvent[]
-    // Event         Event?          @relation(fields: [eventId], references: [id])
-    // eventId       String?
+  // eventId       String          @map("event_id")
+  // event         Event           @relation(fields: [eventId], references: [id])
+  // CheckIn       CheckIn[]
+  AttendeeEvent AttendeeEvent[]
+  // Event         Event?          @relation(fields: [eventId], references: [id])
+  // eventId       String?
+  Event         Event[]
 
-    // @@unique([email])
-    @@map("attendees")
+  // @@unique([email])
+  @@map("attendees")
 }
 
 model AttendeeEvent {
-    id        String   @id @default(uuid())
-    createdAt DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
 
-    attendeeId String   @map("attendee_id")
-    attendee   Attendee @relation(fields: [attendeeId], references: [id])
+  attendeeId String   @map("attendee_id")
+  attendee   Attendee @relation(fields: [attendeeId], references: [id])
 
-    eventId String @map("event_id")
-    event   Event  @relation(fields: [eventId], references: [id])
+  eventId String @map("event_id")
+  event   Event  @relation(fields: [eventId], references: [id])
 
-    hasAttended DateTime? @map("has_attended")
-    // isOrganizer Boolean   @default(false) @map("is_organizer")
+  hasAttended DateTime? @map("has_attended")
+  // isOrganizer Boolean   @default(false) @map("is_organizer")
 
-    @@map("attendee_events")
+  @@map("attendee_events")
 }
 
 // model CheckIn {

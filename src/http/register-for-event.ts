@@ -1,84 +1,72 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
-import { PrismaClient } from "@prisma/client";
+import { BadRequestError } from "../errors/bad-request-error";
+import { NotFoundError } from "../errors/not-found-error";
 import { prisma } from "../libs/prisma";
-import { generateSlug } from "../utils/generate-slug";
 
 export async function registerForEvent(
-    request: FastifyRequest,
-    reply: FastifyReply,
+  request: FastifyRequest,
+  reply: FastifyReply,
 ) {
-    const registerForEvent = z.object({
-        name: z.string().min(3),
-        email: z.string().email(),
-    });
+  const userId = await request.getCurrentUserId();
 
-    const { email, name } = registerForEvent.parse(request.body);
+  const registerForEventParam = z.object({
+    eventId: z.string(),
+  });
 
-    const registerForEventParam = z.object({
-        eventId: z.string(),
-    });
+  const { eventId } = registerForEventParam.parse(request.params);
 
-    const { eventId } = registerForEventParam.parse(request.params);
+  const event = await prisma.event.findUnique({
+    where: {
+      id: eventId,
+    },
+  });
 
-    const event = await prisma.event.findUnique({
-        where: {
-            id: eventId,
-        },
-    });
+  if (!event) {
+    throw new NotFoundError("Event not found");
+  }
 
-    if (!event) {
-        return reply.code(404).send({
-            error: "Event not found",
-        });
-    }
+  const amountOfEventAttenddees = await prisma.attendeeEvent.count({
+    where: {
+      eventId,
+    },
+  });
 
-    const amountOfEventAttenddees = await prisma.attendeeEvent.count({
-        where: {
-            eventId,
-        },
-    });
+  if (event.maxAttendees && amountOfEventAttenddees >= event.maxAttendees) {
+    throw new BadRequestError("Event is full");
+  }
 
-    if (event.maxAttendees && amountOfEventAttenddees >= event.maxAttendees) {
-        return reply.code(400).send({
-            error: "Event is full",
-        });
-    }
+  const isUserAlreadyRegistered = await prisma.attendeeEvent.findFirst({
+    include: {
+      attendee: true,
+      event: true,
+    },
+    where: {
+      attendee: {
+        id: userId,
+      },
+      event: {
+        id: eventId,
+      },
+    },
+  });
 
-    const isUserAlreadyRegistered = await prisma.attendeeEvent.findFirst({
-        include: {
-            attendee: true,
-            event: true,
-        },
-        where: {
-            attendee: {
-                email,
-            },
-            event: {
-                id: eventId,
-            },
-        },
-    });
+  if (isUserAlreadyRegistered) {
+    console.log(isUserAlreadyRegistered);
+    throw new BadRequestError("User already registered for this event");
+  }
 
-    if (isUserAlreadyRegistered) {
-        return reply.code(400).send({
-            error: "User already registered",
-        });
-    }
+  const ticket = await prisma.attendeeEvent.create({
+    data: {
+      attendeeId: userId,
+      eventId: event.id,
+    },
+    include: {
+      attendee: true,
+    },
+  });
 
-    const attendee = await prisma.attendee.create({
-        data: {
-            name: name,
-            email: email,
-        },
-    });
-
-    await prisma.attendeeEvent.create({
-        data: {
-            attendeeId: attendee.id,
-            eventId: event.id,
-        },
-    });
-
-    return reply.code(201).send(attendee);
+  return reply.code(201).send({
+    ticket,
+  });
 }
