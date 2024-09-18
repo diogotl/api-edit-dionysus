@@ -15,7 +15,7 @@ export async function getEvents(request: FastifyRequest, reply: FastifyReply) {
   const events = await prisma.event.findMany({
     take: 10,
     skip: pageIndex * 10,
-    where: query ? { title: { contains: query } } : {},
+    where: query ? { title: { contains: query, mode: "insensitive" } } : {},
     include: {
       _count: {
         select: {
