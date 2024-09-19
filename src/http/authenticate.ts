@@ -40,7 +40,6 @@ export async function authenticate(
   });
 
   return reply.status(201).send({
-    id: user.id,
     token,
   });
 }
