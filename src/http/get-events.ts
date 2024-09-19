@@ -1,10 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { prisma } from "../libs/prisma";
 import z from "zod";
+import { Prisma } from "@prisma/client";
 
 export async function getEvents(request: FastifyRequest, reply: FastifyReply) {
-  // const user = await request.getCurrentUserId();
-
   const getEventAttendeesQuery = z.object({
     query: z.string().nullish(),
     pageIndex: z.string().nullish().default("0").transform(Number),
@@ -12,10 +11,14 @@ export async function getEvents(request: FastifyRequest, reply: FastifyReply) {
 
   const { pageIndex, query } = getEventAttendeesQuery.parse(request.query);
 
+  const whereClause: Prisma.EventWhereInput = query
+    ? { title: { contains: query, mode: 'insensitive' } }
+    : {};
+
   const events = await prisma.event.findMany({
     take: 10,
     skip: pageIndex * 10,
-    where: query ? { title: { contains: query, mode: "insensitive" } } : {},
+    where: whereClause,
     include: {
       _count: {
         select: {
@@ -35,7 +38,9 @@ export async function getEvents(request: FastifyRequest, reply: FastifyReply) {
     attendeesCount: event._count.AttendeeEvent,
   }));
 
-  const total = await prisma.event.count();
+  const total = await prisma.event.count({
+    where: whereClause
+  });
 
   return reply.status(200).send({
     events: response,
